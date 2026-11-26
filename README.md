@@ -18,8 +18,12 @@ China-born EB-1 / EB-2 / EB-3 green card wait time calculator.
 - DHS Yearbook of Immigration Statistics FY2023, Table 7（主申请人与家属比例）
 - Visa Bulletin（2026 年 11 月 Final Action Dates）
 
-## 更新数据
+## 自动更新
 
-所有参数在 `index.html` 底部脚本的 `CAT` 对象里：`fad`（排期线）、`backlog`（I-140 积压）、`horizon`（积压覆盖到的排期日）、`actual`/`a3`/`a5`/`a7`（每年名额）、`dep`（家属系数）。改完记得同步更新页面上的日期说明和 `sitemap.xml` 的 `lastmod`。
+`.github/workflows/update-bulletin.yml` 每天运行 `scripts/update_bulletin.py`：去国务院网站读取最新一期 Visa Bulletin 里中国大陆 EB-1/2/3 的 Final Action Date，有变化就更新 `data.json` 和 `sitemap.xml` 并提交，页面打开时读取 `data.json`。如果国务院改了网页格式导致读不出来，这次运行会失败，GitHub 会发邮件提醒，旧数据保持不变。也可以在 Actions 页面手动点 "Run workflow"。
+
+## 手动更新数据
+
+其余参数在 `index.html` 底部脚本的 `CAT` 对象里：`fad`（排期线）、`backlog`（I-140 积压）、`horizon`（积压覆盖到的排期日）、`actual`/`a3`/`a5`/`a7`（每年名额）、`dep`（家属系数）。改完记得同步更新页面上的日期说明和 `sitemap.xml` 的 `lastmod`。
 
 本工具只是估算，不构成法律意见。

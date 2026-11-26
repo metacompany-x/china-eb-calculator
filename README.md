@@ -20,7 +20,9 @@ China-born EB-1 / EB-2 / EB-3 green card wait time calculator.
 
 ## 自动更新
 
-`.github/workflows/update-bulletin.yml` 每天运行 `scripts/update_bulletin.py`：去国务院网站读取最新一期 Visa Bulletin 里中国大陆 EB-1/2/3 的 Final Action Date，有变化就更新 `data.json` 和 `sitemap.xml` 并提交，页面打开时读取 `data.json`。如果国务院改了网页格式导致读不出来，这次运行会失败，GitHub 会发邮件提醒，旧数据保持不变。也可以在 Actions 页面手动点 "Run workflow"。
+页面打开时读取 `data.json` 里中国大陆 EB-1/2/3 的 Final Action Date。每月 20 日和 28 日，一个 Claude 定时任务会读取国务院最新一期 Visa Bulletin，有变化就更新 `data.json` 和 `sitemap.xml` 并提交。
+
+`scripts/update_bulletin.py` 也能做同样的事，在本机运行即可（`python3 scripts/update_bulletin.py`）。`.github/workflows/update-bulletin.yml` 已停用：国务院网站会拦截 GitHub 服务器的请求（HTTP 403）。
 
 ## 手动更新数据
 

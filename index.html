@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>中国大陆 EB 排期计算器｜EB-1 EB-2 EB-3 绿卡排期等待时间估算</title>
+<meta name="description" content="中国大陆出生申请人的 EB-1、EB-2（含 NIW）、EB-3 职业移民绿卡排期计算器。输入排期日，按 USCIS 已批 I-140 积压、家属系数和国务院每年实际发放量，估算还要排几年、哪年拿卡。China EB-2 EB-3 green card wait time calculator.">
+<link rel="canonical" href="https://metacompany-x.github.io/china-eb-calculator/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="中国大陆 EB 排期计算器">
+<meta property="og:description" content="输入排期日和 EB 类别，用移民局公开数据估算中国大陆申请人还要排几年。">
+<meta property="og:url" content="https://metacompany-x.github.io/china-eb-calculator/">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "中国大陆 EB 排期计算器",
+  "alternateName": "China EB-2 / EB-3 Green Card Wait Time Calculator",
+  "url": "https://metacompany-x.github.io/china-eb-calculator/",
+  "description": "估算中国大陆出生申请人 EB-1、EB-2、EB-3 职业移民绿卡的排期等待时间，基于 USCIS 已批 I-140 积压数据、家属系数和国务院每年实际发放量。",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Any",
+  "inLanguage": ["zh-CN", "en"],
+  "isAccessibleForFree": true,
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: single column tool — inputs card on top, result headline, milestone ladder, formula ledger, editable model params, method + FAQ text, sources. */
+:root{
+  --bg:#EEF2F5; --surface:#FFFFFF; --ink:#13202A; --muted:#5A6A76; --line:#D5DDE3;
+  --accent:#1E5A86; --accent-soft:#E1ECF4; --go:#1F7A4D; --warn:#A6461E;
+  --sans:"IBM Plex Sans","PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  color-scheme:light;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D141A; --surface:#15202A; --ink:#E4ECF2; --muted:#93A4B1; --line:#283744;
+  --accent:#7DB6E0; --accent-soft:#1B2E3D; --go:#5CC48E; --warn:#E69067; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0D141A; --surface:#15202A; --ink:#E4ECF2; --muted:#93A4B1; --line:#283744;
+  --accent:#7DB6E0; --accent-soft:#1B2E3D; --go:#5CC48E; --warn:#E69067; color-scheme:dark }
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;font-size:15px}
+.wrap{max-width:680px;margin:0 auto;padding-block:20px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:18px}
+header .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-size:24px;margin:4px 0 6px;text-wrap:balance;font-weight:700}
+header p{margin:0;color:var(--muted);font-size:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.inputs{display:grid;gap:14px}
+label.lab{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;letter-spacing:.02em}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{all:unset;cursor:pointer;text-align:center;padding:10px 0;font-family:var(--mono);font-weight:600;font-size:14px;color:var(--muted)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:440px){.row2{grid-template-columns:1fr}}
+input,select{width:100%;font:inherit;font-family:var(--mono);font-size:16px;padding:9px 10px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink)}
+input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.hint{font-size:12px;color:var(--muted);margin-top:5px}
+.result{background:var(--accent-soft);border:1px solid var(--line);border-radius:10px;padding:18px 16px;display:grid;gap:4px}
+.result .k{font-size:12px;color:var(--muted)}
+.big{font-family:var(--mono);font-size:44px;font-weight:600;line-height:1.05;font-variant-numeric:tabular-nums}
+.big small{font-size:18px;font-weight:500;margin-left:4px}
+.result .sub{font-size:14px}
+.result .sub b{font-family:var(--mono);font-weight:600}
+.status{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;font-weight:600;margin-top:6px;width:max-content}
+.status.go{background:var(--go);color:var(--surface)}
+h2{font-size:15px;margin:0 0 10px;font-weight:600}
+.ladder{list-style:none;margin:0;padding:0;display:grid}
+.ladder li{display:grid;grid-template-columns:14px 1fr auto;gap:10px;align-items:start;position:relative;padding-bottom:14px}
+.ladder li:last-child{padding-bottom:0}
+.ladder li::before{content:"";grid-column:1;width:10px;height:10px;border-radius:50%;margin-top:6px;background:var(--surface);border:2px solid var(--muted)}
+.ladder li.you::before{border-color:var(--accent);background:var(--accent)}
+.ladder li.done::before{border-color:var(--go);background:var(--go)}
+.ladder li:not(:last-child)::after{content:"";position:absolute;left:4px;top:18px;bottom:-2px;width:2px;background:var(--line)}
+.ladder .t{font-size:14px;min-width:0}
+.ladder .t span{display:block;font-size:12px;color:var(--muted)}
+.ladder .d{font-family:var(--mono);font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ledger{width:100%;border-collapse:collapse;font-size:14px}
+.ledger td{padding:8px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.ledger tr:last-child td{border-bottom:none}
+.ledger td.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:12px}
+.ledger td span{display:block;font-size:12px;color:var(--muted)}
+.ledger tr.tot td{font-weight:600}
+.calib{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.calib div{border:1px solid var(--line);border-radius:8px;padding:10px}
+.calib .v{font-family:var(--mono);font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.calib .l{font-size:12px;color:var(--muted)}
+details summary{cursor:pointer;font-weight:600;font-size:15px;list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:" +";color:var(--muted);font-family:var(--mono)}
+details[open] summary::after{content:" −"}
+details .inputs{margin-top:14px}
+button.reset{all:unset;cursor:pointer;font-size:13px;color:var(--accent);text-decoration:underline;width:max-content}
+button.reset:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.prose{font-size:15px}
+.prose h2{font-size:17px;margin:0 0 10px}
+.prose h3{font-size:15px;margin:16px 0 4px}
+.prose p{margin:0 0 10px}
+.prose ol{margin:0 0 10px;padding-left:20px;display:grid;gap:8px}
+.prose a{color:var(--accent)}
+.notes{font-size:13px;color:var(--muted);display:grid;gap:8px}
+.notes p{margin:0}
+.notes a{color:var(--accent)}
+.notes ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.example{font-size:12px;color:var(--warn);font-weight:600}
+footer{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <div class="eyebrow">Chargeability · China-mainland born</div>
+    <h1>中国大陆 EB 排期计算器</h1>
+    <p>输入排期日和类别，按 USCIS 积压数据、家属系数和每年实际发放量，估算你什么时候排到。适用于 EB-1、EB-2（含 NIW）、EB-3。</p>
+  </header>
+
+  <section class="card inputs" aria-label="输入">
+    <div>
+      <label class="lab" id="catLab">类别</label>
+      <div class="seg" role="group" aria-labelledby="catLab">
+        <button type="button" data-cat="EB1" aria-pressed="false">EB-1</button>
+        <button type="button" data-cat="EB2" aria-pressed="true">EB-2</button>
+        <button type="button" data-cat="EB3" aria-pressed="false">EB-3</button>
+      </div>
+    </div>
+    <div class="row2">
+      <div>
+        <label class="lab" for="pd">排期日（Priority Date）</label>
+        <input type="date" id="pd" value="2025-12-01">
+        <div class="example" id="exNote">示例：2025/12/1，改成你的日期</div>
+      </div>
+      <div>
+        <label class="lab" for="annualMode">每年给中国大陆的名额</label>
+        <select id="annualMode">
+          <option value="actual">FY2024 实际发放量</option>
+          <option value="a3">过去 3 年平均（FY2022–24）</option>
+          <option value="a5">过去 5 年平均（FY2020–24）</option>
+          <option value="a7">过去 7 年平均（FY2018–24）</option>
+          <option value="statutory">法定下限 2,803</option>
+          <option value="custom">自定义</option>
+        </select>
+        <input type="number" id="annualCustom" min="1" step="1" value="5000" hidden aria-label="自定义每年名额">
+        <div class="hint" id="annualHint"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="result" aria-live="polite">
+    <div class="k">预计还要排</div>
+    <div class="big" id="waitBig">—</div>
+    <div class="sub" id="waitSub"></div>
+    <span class="status go" id="currentTag" hidden>你的排期已经到了</span>
+  </section>
+
+  <section class="card">
+    <h2>时间线</h2>
+    <ol class="ladder" id="ladder"></ol>
+  </section>
+
+  <section class="card">
+    <h2>怎么算出来的</h2>
+    <table class="ledger"><tbody id="ledger"></tbody></table>
+    <div class="calib">
+      <div><div class="v" id="calModel">—</div><div class="l">模型推算：排期线每年前进天数</div></div>
+      <div><div class="v" id="calReal">—</div><div class="l">近期 Visa Bulletin 实际前进天数/年</div></div>
+    </div>
+    <p class="hint" style="margin-top:8px">两个数接近，说明这套参数和实际排期移动速度对得上。</p>
+  </section>
+
+  <section class="card">
+    <details id="adv">
+      <summary>模型参数（可改）</summary>
+      <div class="inputs">
+        <div class="row2">
+          <div>
+            <label class="lab" for="fad">当前 Final Action Date</label>
+            <input type="date" id="fad">
+            <div class="hint">2026 年 11 月 Visa Bulletin</div>
+          </div>
+          <div>
+            <label class="lab" for="dep">家属系数（总人数 ÷ 主申请人）</label>
+            <input type="number" id="dep" step="0.05" min="1" value="1.6">
+            <div class="hint" id="depHint"></div>
+          </div>
+        </div>
+        <div class="row2">
+          <div>
+            <label class="lab" for="backlog">已批 I-140 等名额（主申请人）</label>
+            <input type="number" id="backlog" min="0" step="1">
+            <div class="hint">USCIS，截至 2026 年 6 月</div>
+          </div>
+          <div>
+            <label class="lab" for="horizon">这批人排期日大致截止到</label>
+            <input type="date" id="horizon">
+            <div class="hint">PERM 和 I-140 审理有滞后，更晚的排期日还没进统计</div>
+          </div>
+        </div>
+        <div class="row2">
+          <div>
+            <label class="lab" for="proc">排到后 I-485 审批（月）</label>
+            <input type="number" id="proc" min="0" step="1" value="8">
+          </div>
+          <div style="align-self:end"><button type="button" class="reset" id="resetBtn">恢复该类别默认值</button></div>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <section class="card prose">
+    <h2>算法说明</h2>
+    <ol>
+      <li><b>数一数你前面有多少人。</b>USCIS 公布了中国大陆出生、I-140 已批、正在等名额的主申请人数（EB-2 约 3.5 万人，截至 2026 年 6 月）。把这些人按排期日平均摊开，得到每个排期年份大约有多少人，再乘以你和当前排期线之间隔的年数。</li>
+      <li><b>加上家属。</b>配偶和孩子也各占一个名额，所以乘以家属系数：EB-1 取 2.0，EB-2 取 1.6，EB-3 取 1.7。系数用两种方法交叉验证：一是 DHS 绿卡发放数据中主申请人和家属的比例，二是用排期表的实际移动速度反推。</li>
+      <li><b>看每年能消化多少人。</b>用国务院 Visa Office 年报里中国大陆每年实际拿到的绿卡数（领事签证加境内调整身份，含家属）。法定的每类单国上限 2,803 只是下限，实际每年还会分到其他类别和国家剩下的名额。</li>
+      <li><b>一除就是等待时间。</b>等待年数 = 前面总人数 ÷ 每年名额。排到之后，再加上 I-485 审批时间。</li>
+    </ol>
+    <p>验证方法：用这套参数推算排期线每年应该前进多少天，再和 Visa Bulletin 的实际移动速度对比。</p>
+
+    <h3>EB-2 中国大陆排期要等多久？</h3>
+    <p>以排期日 2025 年 12 月为例，前面约 6.4 万人（含家属）。按近 7 年平均发放量算，约 12 年；按 FY2024 实际发放量算，约 10 年；按法定下限 2,803 算，约 23 年。</p>
+    <h3>为什么不直接用 2,803 计算？</h3>
+    <p>2,803 是每个国家在每个类别的法定上限，但其他类别和国家用不完的名额会溢出。2018 到 2024 财年，中国大陆 EB-2 每年实际拿到 2,681 到 8,523 张，平均约 5,244 张。</p>
+    <h3>结果准吗？</h3>
+    <p>这是基于公开数据的估算。还在走 PERM、I-140 未批的人没算进去；2025 年以后 NIW 申请明显增多，后面的排期日可能更密；每年溢出的名额也会波动。建议几个名额口径对比着看。</p>
+  </section>
+
+  <section class="notes">
+    <p><b>模型假设：</b>排期日越晚，前面的人越多；每个排期年份的人数用"已批 I-140 积压 ÷ 覆盖的排期年数"估算，并假设之后的年份密度不变。</p>
+    <ul>
+      <li>FY2025 中国 EB-2 的 I-140 批准量比上一年多了约 49%，所以 2025 年以后排期日的人可能更密，实际会更慢。</li>
+      <li>家属系数按类别取：EB-1 2.0、EB-2 1.6、EB-3 1.7。来源是两个方法的交叉：一是用 DHS FY2023 全国各类别的家属比例，按中国 FY2024 的整体系数 1.81 等比例换算；二是用近期排期线实际前进速度反推每张已批 I-140 实际消耗的名额。后者会扣掉重复 I-140、回国或转其他身份的人，所以偏低。</li>
+      <li>没算进去的：还在走 PERM、I-140 未批的人，降级 EB-3 的人，以及溢出名额的年度波动。</li>
+      <li>每年发放量 = 领事签证 + 境内调整身份，含配偶和子女。2021–2022 年因为疫情期间家庭类名额没用完而大幅溢出，所以 3 年平均偏乐观，7 年平均更接近常态。2,803 是法定的每类单国上限，适合看最坏情况。截至 2026 年 11 月，FY2025 按国家和类别拆分的发放量还没公布，所以数据截到 FY2024。</li>
+      <li>这是估算工具，不是法律意见。</li>
+    </ul>
+    <p>数据来源：
+      <a href="https://prachub.com/green-card/china/eb-2/">USCIS 已批 I-140 积压（PracHub 整理）</a> ·
+      <a href="https://travel.state.gov/content/dam/visas/Statistics/AnnualReports/FY2024AnnualReport/Table%20V_PartII.pdf">国务院 Visa Office 年报 Table V（FY2018–24 发放量）</a> ·
+      <a href="https://ohss.dhs.gov/topics/immigration/yearbook/2023/table7">DHS 年鉴 FY2023 Table 7（主申请人与家属）</a> ·
+      <a href="https://www.ellis.com/visa-bulletin">2026 年 11 月 Visa Bulletin</a> ·
+      <a href="https://greencardclock.com/blog/china-eb-visa-data-fy2025-eb1-eb2-eb3-eb5">FY2025 中国 I-140 批准量</a></p>
+  </section>
+
+  <footer>
+    <p lang="en">China-born EB-1 / EB-2 / EB-3 green card wait time calculator. Estimates how many years remain until your priority date becomes current, using USCIS approved I-140 backlog data, a dependents multiplier, and State Department annual issuance for mainland China. Not legal advice.</p>
+    <p>数据更新于 2026 年 11 月。</p>
+  </footer>
+</main>
+
+<script>
+(function(){
+  var YR = 365.2425*864e5;
+  var CAT = {
+    EB1:{fad:'2023-08-01', backlog:14101, horizon:'2026-03-01', actual:6952, a3:8461, a5:7854, a7:7305, recent:225, dep:2.0, depNote:'EB-1 建议 2.0：DHS 换算 2.03，排期移动反推约 2.1'},
+    EB2:{fad:'2021-10-01', backlog:34936, horizon:'2025-06-01', actual:6556, a3:7150, a5:6132, a7:5244, recent:183, dep:1.6, depNote:'EB-2 建议 1.6：DHS 换算 1.69，排期移动反推约 1.4（偏低）'},
+    EB3:{fad:'2022-01-22', backlog:11070, horizon:'2024-12-01', actual:6141, a3:5604, a5:5085, a7:4785, recent:378, dep:1.7, depNote:'EB-3 建议 1.7：DHS 换算 1.74，排期移动反推约 1.55'}
+  };
+  var cat = 'EB2';
+  var $ = function(id){return document.getElementById(id)};
+  var fmtN = function(n){return Math.round(n).toLocaleString('en-US')};
+  var parse = function(s){ if(!s) return null; var p=s.split('-'); return new Date(+p[0], +p[1]-1, +p[2]||1); };
+  var ym = function(d){ return d.getFullYear()+' 年 '+(d.getMonth()+1)+' 月'; };
+  var addYears = function(d, y){ return new Date(d.getTime()+y*YR); };
+  var yrs = function(y){ return y<1 ? Math.round(y*12)+' 个月' : y.toFixed(1)+' 年'; };
+
+  function loadDefaults(){
+    var c = CAT[cat];
+    $('fad').value = c.fad; $('backlog').value = c.backlog; $('horizon').value = c.horizon;
+    $('dep').value = c.dep;
+  }
+  function annual(){
+    var m = $('annualMode').value;
+    if(m==='statutory') return 2803;
+    if(m==='custom') return Math.max(1, +$('annualCustom').value || 1);
+    if(m==='a3'||m==='a5'||m==='a7') return CAT[cat][m];
+    return CAT[cat].actual;
+  }
+
+  function render(){
+    var c = CAT[cat];
+    var pd = parse($('pd').value), fad = parse($('fad').value), hz = parse($('horizon').value);
+    var dep = Math.max(1, +$('dep').value || 1), backlog = Math.max(0, +$('backlog').value || 0);
+    var proc = Math.max(0, +$('proc').value || 0), A = annual();
+    var mode = $('annualMode').value;
+    $('annualCustom').hidden = mode!=='custom';
+    var catName = cat.replace('EB','EB-');
+    var HINT = {
+      actual: catName+' 中国 FY2024 实际：'+fmtN(c.actual)+'（含家属）',
+      a3: catName+' FY2022–24 平均 '+fmtN(c.a3)+'；含 2022 年疫情溢出高峰',
+      a5: catName+' FY2020–24 平均 '+fmtN(c.a5),
+      a7: catName+' FY2018–24 平均 '+fmtN(c.a7)+'；建议的基准情景',
+      statutory: '7% 单国上限 × 该类 28.6%，最坏情况',
+      custom: '含家属的每年总张数'
+    };
+    $('annualHint').textContent = HINT[mode];
+    $('depHint').textContent = c.depNote;
+    $('exNote').hidden = $('pd').value !== '2025-12-01';
+    if(!pd || !fad || !hz){ $('waitBig').textContent='—'; return; }
+
+    var span = (hz - fad)/YR;
+    var density = span>0 ? backlog/span : 0;
+    var aheadYrs = Math.max(0, (pd - fad)/YR);
+    var principals = density*aheadYrs;
+    var total = principals*dep;
+    var wait = total/A;
+    var today = new Date(); today.setHours(0,0,0,0);
+    var curDate = addYears(today, wait);
+    var gcDate = new Date(curDate.getTime()+proc*30.44*864e5);
+    var fromPD = (curDate - pd)/YR;
+    var isCur = pd <= fad;
+
+    $('currentTag').hidden = !isCur;
+    if(isCur){
+      $('waitBig').innerHTML = '0<small>年</small>';
+      $('waitSub').innerHTML = '排期日早于当前 Final Action Date（'+ym(fad)+'），可以等 I-485 审批了。';
+    } else {
+      var y = wait;
+      $('waitBig').innerHTML = (y<1 ? Math.round(y*12)+'<small>个月</small>' : y.toFixed(1)+'<small>年</small>');
+      $('waitSub').innerHTML = '约 <b>'+ym(curDate)+'</b> 排到，约 <b>'+ym(gcDate)+'</b> 拿卡；从排期日算起共等 <b>'+yrs(fromPD)+'</b>。';
+    }
+
+    var L = [
+      {cls:'done', t:'排期线现在到这', s:'Final Action Date', d:ym(fad)},
+      {cls:'you', t:'你的排期日', s:isCur?'已经在排期线之前':'前面约 '+fmtN(total)+' 人（含家属）', d:ym(pd)},
+      {cls:'', t:'今天', s:'', d:ym(today)}
+    ];
+    if(!isCur) L.push({cls:'', t:'预计排到', s:'排期线推进到你的日期，再等 '+yrs(wait), d:ym(curDate)});
+    L.push({cls:'', t:'预计拿到绿卡', s:'加上 I-485 审批 '+proc+' 个月', d:ym(isCur?new Date(today.getTime()+proc*30.44*864e5):gcDate)});
+    $('ladder').innerHTML = L.map(function(x){
+      return '<li class="'+x.cls+'"><div class="t">'+x.t+(x.s?'<span>'+x.s+'</span>':'')+'</div><div class="d">'+x.d+'</div></li>';
+    }).join('');
+
+    $('ledger').innerHTML = [
+      ['每个排期年份的主申请人', fmtN(backlog)+' 人 ÷ '+span.toFixed(2)+' 年（'+ym(fad)+'→'+ym(hz)+'）', fmtN(density)+' 人/年'],
+      ['你前面的排期跨度', ym(fad)+' → '+ym(pd), aheadYrs.toFixed(2)+' 年'],
+      ['前面的主申请人', fmtN(density)+' × '+aheadYrs.toFixed(2), fmtN(principals)+' 人'],
+      ['加上配偶和孩子', '× '+dep+(dep===c.dep?'（'+catName+' 建议值）':'（自定义）'), fmtN(total)+' 人'],
+      ['每年名额', {actual:'FY2024 实际',a3:'过去 3 年平均',a5:'过去 5 年平均',a7:'过去 7 年平均',statutory:'法定下限',custom:'自定义'}[mode], fmtN(A)+' 张'],
+      ['排期等待', fmtN(total)+' ÷ '+fmtN(A), yrs(wait), 'tot']
+    ].map(function(r){
+      return '<tr'+(r[3]?' class="tot"':'')+'><td>'+r[0]+'<span>'+r[1]+'</span></td><td class="n">'+r[2]+'</td></tr>';
+    }).join('');
+
+    var speed = density>0 ? A/(density*dep)*365 : 0;
+    $('calModel').textContent = fmtN(speed)+' 天';
+    $('calReal').textContent = '≈ '+c.recent+' 天';
+  }
+
+  document.querySelectorAll('.seg button').forEach(function(b){
+    b.addEventListener('click', function(){
+      cat = b.dataset.cat;
+      document.querySelectorAll('.seg button').forEach(function(x){x.setAttribute('aria-pressed', x===b?'true':'false')});
+      loadDefaults(); render();
+    });
+  });
+  ['pd','annualMode','annualCustom','fad','dep','backlog','horizon','proc'].forEach(function(id){
+    $(id).addEventListener('input', render); $(id).addEventListener('change', render);
+  });
+  $('resetBtn').addEventListener('click', function(){ loadDefaults(); $('proc').value=8; render(); });
+  loadDefaults(); render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://metacompany-x.github.io/china-eb-calculator/sitemap.xml

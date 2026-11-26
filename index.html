@@ -71,9 +71,19 @@ input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline
 .hint{font-size:12px;color:var(--muted);margin-top:5px}
 .result{background:var(--accent-soft);border:1px solid var(--line);border-radius:10px;padding:18px 16px;display:grid;gap:4px}
 .result .k{font-size:12px;color:var(--muted)}
-.big{font-family:var(--mono);font-size:44px;font-weight:600;line-height:1.05;font-variant-numeric:tabular-nums}
-.big small{font-size:18px;font-weight:500;margin-left:4px}
-.result .sub{font-size:14px}
+.big{font-family:var(--mono);font-size:38px;font-weight:600;line-height:1.05;font-variant-numeric:tabular-nums}
+.big small{font-size:16px;font-weight:500;margin-left:4px}
+.dual{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:4px}
+@media (max-width:440px){.dual{grid-template-columns:minmax(0,1fr)}}
+.m{border:1px solid var(--line);border-radius:8px;padding:12px;display:grid;gap:4px;align-content:start;color:var(--muted)}
+.m .big{color:var(--muted)}
+.m.rec{background:var(--surface);border:2px solid var(--accent);color:var(--ink)}
+.m.rec .big{color:var(--ink)}
+.lbl{font-size:13px;font-weight:600;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.rec-tag{display:none;font-size:11px;font-weight:600;padding:1px 7px;border-radius:99px;background:var(--accent);color:var(--surface)}
+.m.rec .rec-tag{display:inline-block}
+.why{margin:6px 0 0;font-size:12px;line-height:1.6;color:var(--muted)}
+.result .sub{font-size:13px}
 .result .sub b{font-family:var(--mono);font-weight:600}
 .status{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;font-weight:600;margin-top:6px;width:max-content}
 .status.go{background:var(--go);color:var(--surface)}
@@ -149,7 +159,7 @@ footer{font-size:12px;color:var(--muted)}
           <option value="a3">过去 3 年平均（FY2022–24）</option>
           <option value="a5">过去 5 年平均（FY2020–24）</option>
           <option value="a7">过去 7 年平均（FY2018–24）</option>
-          <option value="statutory">法定下限 2,803</option>
+          <option value="statutory">7% 基本份额 2,803</option>
           <option value="custom">自定义</option>
         </select>
         <input type="number" id="annualCustom" min="1" step="1" value="5000" hidden aria-label="自定义每年名额">
@@ -160,8 +170,19 @@ footer{font-size:12px;color:var(--muted)}
 
   <section class="result" aria-live="polite">
     <div class="k">预计还要排</div>
-    <div class="big" id="waitBig">—</div>
-    <div class="sub" id="waitSub"></div>
+    <div class="dual">
+      <div class="m" id="mHead">
+        <div class="lbl">按人头计算<span class="rec-tag">推荐</span></div>
+        <div class="big" id="waitBig">—</div>
+        <div class="sub" id="waitSub"></div>
+      </div>
+      <div class="m" id="mVel">
+        <div class="lbl">按历史速度外推<span class="rec-tag">推荐</span></div>
+        <div class="big" id="velBig">—</div>
+        <div class="sub" id="velSub"></div>
+      </div>
+    </div>
+    <p class="why" id="why"></p>
     <span class="status go" id="currentTag" hidden>你的排期已经到了</span>
   </section>
 
@@ -174,10 +195,10 @@ footer{font-size:12px;color:var(--muted)}
     <h2>怎么算出来的</h2>
     <table class="ledger"><tbody id="ledger"></tbody></table>
     <div class="calib">
-      <div><div class="v" id="calModel">—</div><div class="l">模型推算：排期线每年前进天数</div></div>
-      <div><div class="v" id="calReal">—</div><div class="l">近期 Visa Bulletin 实际前进天数/年</div></div>
+      <div><div class="v" id="calModel">—</div><div class="l">按人头推算：排期线每年应前进天数</div></div>
+      <div><div class="v" id="calReal">—</div><div class="l" id="calRealLbl">Visa Bulletin 实际：排期线每年前进天数</div></div>
     </div>
-    <p class="hint" style="margin-top:8px">两个数接近，说明这套参数和实际排期移动速度对得上。</p>
+    <p class="hint" style="margin-top:8px">左边按积压人数推算，右边是排期线实际走过的速度，也就是"按历史速度外推"用的速度。左边更慢，说明还没排到的排期日比已经排过去的更挤。</p>
   </section>
 
   <section class="card">
@@ -230,9 +251,11 @@ footer{font-size:12px;color:var(--muted)}
     <p>验证方法：用这套参数推算排期线每年应该前进多少天，再和 Visa Bulletin 的实际移动速度对比。</p>
 
     <h3>EB-2 中国大陆排期要等多久？</h3>
-    <p>以排期日 2025 年 12 月为例，前面约 6.4 万人（含家属）。按近 7 年平均发放量算，约 12 年；按 FY2024 实际发放量算，约 10 年；按法定下限 2,803 算，约 23 年。</p>
+    <p>以排期日 2025 年 12 月为例，前面约 6.4 万人（含家属）。按近 7 年平均发放量算，约 12 年；按 FY2024 实际发放量算，约 10 年；按 7% 基本份额 2,803 算，约 23 年。如果按排期线过去一年的实际速度外推，约 8 年，但这个排期日离当前排期线较远，外推结果偏乐观。</p>
     <h3>为什么不直接用 2,803 计算？</h3>
     <p>2,803 是每个国家在每个类别的法定上限，但其他类别和国家用不完的名额会溢出。2018 到 2024 财年，中国大陆 EB-2 每年实际拿到 2,681 到 8,523 张，平均约 5,244 张。</p>
+    <h3>为什么有两个结果？该信哪个？</h3>
+    <p><b>按人头计算</b>用的是正在排队的实际人数：前面的人数 × 家属系数 ÷ 每年名额。<b>按历史速度外推</b>只看排期线过去一年每月前进了多少天，假设以后照这个速度继续走。排期日在 2022 年左右、离当前排期线一年半以内的，前面这段排期日的人数和刚排过去的差不多，外推比较直接，推荐看历史速度。排期日更晚的，推荐看按人头计算：2022 年以后 I-140 批准量明显增加（EB-2 主要是 NIW），后面的排期日更挤，排期线会越走越慢，按过去的速度外推容易偏乐观。两个结果之间的差距，可以看作不确定的范围。</p>
     <h3>结果准吗？</h3>
     <p>这是基于公开数据的估算。还在走 PERM、I-140 未批的人没算进去；2025 年以后 NIW 申请明显增多，后面的排期日可能更密；每年溢出的名额也会波动。建议几个名额口径对比着看。</p>
   </section>
@@ -262,19 +285,29 @@ footer{font-size:12px;color:var(--muted)}
 
 <script>
 (function(){
-  var YR = 365.2425*864e5;
+  var YR = 365.2425*864e5, DAY = 864e5;
   var CAT = {
-    EB1:{fad:'2023-08-01', backlog:14101, horizon:'2026-03-01', actual:6952, a3:8461, a5:7854, a7:7305, recent:225, dep:2.0, depNote:'EB-1 建议 2.0：DHS 换算 2.03，排期移动反推约 2.1'},
-    EB2:{fad:'2021-10-01', backlog:34936, horizon:'2025-06-01', actual:6556, a3:7150, a5:6132, a7:5244, recent:183, dep:1.6, depNote:'EB-2 建议 1.6：DHS 换算 1.69，排期移动反推约 1.4（偏低）'},
-    EB3:{fad:'2022-01-22', backlog:11070, horizon:'2024-12-01', actual:6141, a3:5604, a5:5085, a7:4785, recent:378, dep:1.7, depNote:'EB-3 建议 1.7：DHS 换算 1.74，排期移动反推约 1.55'}
+    EB1:{fad:'2023-08-01', backlog:14101, horizon:'2026-03-01', actual:6952, a3:8461, a5:7854, a7:7305, dep:2.0, depNote:'EB-1 建议 2.0：DHS 换算 2.03，排期移动反推约 2.1'},
+    EB2:{fad:'2021-10-01', backlog:34936, horizon:'2025-06-01', actual:6556, a3:7150, a5:6132, a7:5244, dep:1.6, depNote:'EB-2 建议 1.6：DHS 换算 1.69，排期移动反推约 1.4（偏低）'},
+    EB3:{fad:'2022-01-22', backlog:11070, horizon:'2024-12-01', actual:6141, a3:5604, a5:5085, a7:4785, dep:1.7, depNote:'EB-3 建议 1.7：DHS 换算 1.74，排期移动反推约 1.55'}
   };
+  // Bulletin the Final Action Dates above come from, and the earlier bulletin the
+  // historical speed is measured from. Both are refreshed from data.json.
+  var BULLETIN = '2026-11';
+  var VEL = {bulletin:'2025-11', fad:{EB1:'2022-12-22', EB2:'2021-04-01', EB3:'2021-03-01'}};
+  var NEAR_DAYS = 548;  // within ~18 months of the current line → trust historical speed
+
   var cat = 'EB2';
   var $ = function(id){return document.getElementById(id)};
   var fmtN = function(n){return Math.round(n).toLocaleString('en-US')};
   var parse = function(s){ if(!s) return null; var p=s.split('-'); return new Date(+p[0], +p[1]-1, +p[2]||1); };
   var ym = function(d){ return d.getFullYear()+' 年 '+(d.getMonth()+1)+' 月'; };
+  var ymKey = function(k){ var p=k.split('-'); return p[0]+' 年 '+(+p[1])+' 月'; };
+  var monthsBetween = function(a, b){ var x=a.split('-'), y=b.split('-'); return (+y[0]-x[0])*12 + (+y[1]-x[1]); };
   var addYears = function(d, y){ return new Date(d.getTime()+y*YR); };
+  var addMonths = function(d, m){ return new Date(d.getFullYear(), d.getMonth()+Math.ceil(m), 1); };
   var yrs = function(y){ return y<1 ? Math.round(y*12)+' 个月' : y.toFixed(1)+' 年'; };
+  var bigYrs = function(y){ return y<1 ? Math.round(y*12)+'<small>个月</small>' : y.toFixed(1)+'<small>年</small>'; };
 
   function loadDefaults(){
     var c = CAT[cat];
@@ -302,14 +335,15 @@ footer{font-size:12px;color:var(--muted)}
       a3: catName+' FY2022–24 平均 '+fmtN(c.a3)+'；含 2022 年疫情溢出高峰',
       a5: catName+' FY2020–24 平均 '+fmtN(c.a5),
       a7: catName+' FY2018–24 平均 '+fmtN(c.a7)+'；建议的基准情景',
-      statutory: '7% 单国上限 × 该类 28.6%，最坏情况',
+      statutory: '7% 单国限额 × 该类 28.6%，最坏情况',
       custom: '含家属的每年总张数'
     };
     $('annualHint').textContent = HINT[mode];
     $('depHint').textContent = c.depNote;
     $('exNote').hidden = $('pd').value !== '2025-12-01';
-    if(!pd || !fad || !hz){ $('waitBig').textContent='—'; return; }
+    if(!pd || !fad || !hz){ $('waitBig').textContent='—'; $('velBig').textContent='—'; return; }
 
+    // Method 1: headcount — people ahead × dependents ÷ visas per year
     var span = (hz - fad)/YR;
     var density = span>0 ? backlog/span : 0;
     var aheadYrs = Math.max(0, (pd - fad)/YR);
@@ -317,28 +351,56 @@ footer{font-size:12px;color:var(--muted)}
     var total = principals*dep;
     var wait = total/A;
     var today = new Date(); today.setHours(0,0,0,0);
-    var curDate = addYears(today, wait);
-    var gcDate = new Date(curDate.getTime()+proc*30.44*864e5);
-    var fromPD = (curDate - pd)/YR;
-    var isCur = pd <= fad;
+    var headDate = addYears(today, wait);
 
+    // Method 2: historical speed — how fast the line actually moved, extrapolated
+    var bDate = parse(BULLETIN+'-01');
+    var velMonths = monthsBetween(VEL.bulletin, BULLETIN);
+    var anchor = parse(VEL.fad[cat]);
+    var perMonth = (velMonths>0 && anchor) ? (fad - anchor)/DAY/velMonths : 0;   // days of priority date per month
+    var gapDays = Math.max(0, (pd - fad)/DAY);
+    var velOk = perMonth > 0;
+    var velWaitM = velOk ? gapDays/perMonth : Infinity;
+    var velDate = velOk ? addMonths(bDate, velWaitM) : null;
+
+    var isCur = pd <= fad;
+    var useVel = !isCur && velOk && gapDays <= NEAR_DAYS;
+    $('mHead').classList.toggle('rec', !isCur && !useVel);
+    $('mVel').classList.toggle('rec', useVel);
     $('currentTag').hidden = !isCur;
+
+    var recDate = useVel ? velDate : headDate;
+    var gcDate = new Date(recDate.getTime()+proc*30.44*DAY);
+
     if(isCur){
       $('waitBig').innerHTML = '0<small>年</small>';
-      $('waitSub').innerHTML = '排期日早于当前 Final Action Date（'+ym(fad)+'），可以等 I-485 审批了。';
+      $('velBig').innerHTML = '0<small>年</small>';
+      $('waitSub').textContent = '排期日早于当前 Final Action Date（'+ym(fad)+'）';
+      $('velSub').textContent = '可以等 I-485 审批了';
+      $('why').textContent = '';
     } else {
-      var y = wait;
-      $('waitBig').innerHTML = (y<1 ? Math.round(y*12)+'<small>个月</small>' : y.toFixed(1)+'<small>年</small>');
-      $('waitSub').innerHTML = '约 <b>'+ym(curDate)+'</b> 排到，约 <b>'+ym(gcDate)+'</b> 拿卡；从排期日算起共等 <b>'+yrs(fromPD)+'</b>。';
+      $('waitBig').innerHTML = bigYrs(wait);
+      $('waitSub').innerHTML = '约 <b>'+ym(headDate)+'</b> 排到；前面约 '+fmtN(total)+' 人';
+      if(velOk){
+        $('velBig').innerHTML = bigYrs(velWaitM/12);
+        $('velSub').innerHTML = '约 <b>'+ym(velDate)+'</b> 排到；排期线每月走 '+Math.round(perMonth)+' 天';
+      } else {
+        $('velBig').textContent = '—';
+        $('velSub').textContent = '排期线过去一段时间没有前进，无法外推';
+      }
+      var gapM = Math.round(gapDays/30.44);
+      $('why').textContent = useVel
+        ? '为什么推荐历史速度：你的排期日离当前排期线只有约 '+gapM+' 个月。这段排期日的人数和刚排过去的差不多，按排期线实际走过的速度外推比较直接。按人头计算把 2021 年以后各年的人数平均摊开，可能高估你前面的人数。'
+        : '为什么推荐按人头计算：你的排期日离当前排期线约 '+gapM+' 个月。2022 年以后 I-140 批准量明显增加（EB-2 主要是 NIW），后面的排期日比已经排过去的更挤，排期线会越走越慢，按历史速度外推容易偏乐观。按人头计算用的是实际在排队的人数，更能反映这种拥挤。两个结果之间的差距，可以看作不确定的范围。';
     }
 
     var L = [
-      {cls:'done', t:'排期线现在到这', s:'Final Action Date', d:ym(fad)},
+      {cls:'done', t:'排期线现在到这', s:ymKey(BULLETIN)+' Visa Bulletin 的 Final Action Date', d:ym(fad)},
       {cls:'you', t:'你的排期日', s:isCur?'已经在排期线之前':'前面约 '+fmtN(total)+' 人（含家属）', d:ym(pd)},
       {cls:'', t:'今天', s:'', d:ym(today)}
     ];
-    if(!isCur) L.push({cls:'', t:'预计排到', s:'排期线推进到你的日期，再等 '+yrs(wait), d:ym(curDate)});
-    L.push({cls:'', t:'预计拿到绿卡', s:'加上 I-485 审批 '+proc+' 个月', d:ym(isCur?new Date(today.getTime()+proc*30.44*864e5):gcDate)});
+    if(!isCur) L.push({cls:'', t:'预计排到', s:'按'+(useVel?'历史速度外推':'人头计算')+'（推荐的结果）', d:ym(recDate)});
+    L.push({cls:'', t:'预计拿到绿卡', s:'加上 I-485 审批 '+proc+' 个月', d:ym(isCur?new Date(today.getTime()+proc*30.44*DAY):gcDate)});
     $('ladder').innerHTML = L.map(function(x){
       return '<li class="'+x.cls+'"><div class="t">'+x.t+(x.s?'<span>'+x.s+'</span>':'')+'</div><div class="d">'+x.d+'</div></li>';
     }).join('');
@@ -348,15 +410,18 @@ footer{font-size:12px;color:var(--muted)}
       ['你前面的排期跨度', ym(fad)+' → '+ym(pd), aheadYrs.toFixed(2)+' 年'],
       ['前面的主申请人', fmtN(density)+' × '+aheadYrs.toFixed(2), fmtN(principals)+' 人'],
       ['加上配偶和孩子', '× '+dep+(dep===c.dep?'（'+catName+' 建议值）':'（自定义）'), fmtN(total)+' 人'],
-      ['每年名额', {actual:'FY2024 实际',a3:'过去 3 年平均',a5:'过去 5 年平均',a7:'过去 7 年平均',statutory:'法定下限',custom:'自定义'}[mode], fmtN(A)+' 张'],
-      ['排期等待', fmtN(total)+' ÷ '+fmtN(A), yrs(wait), 'tot']
+      ['每年名额', {actual:'FY2024 实际',a3:'过去 3 年平均',a5:'过去 5 年平均',a7:'过去 7 年平均',statutory:'7% 基本份额',custom:'自定义'}[mode], fmtN(A)+' 张'],
+      ['按人头计算的等待', fmtN(total)+' ÷ '+fmtN(A), yrs(wait), 'tot'],
+      ['排期线历史速度', ymKey(VEL.bulletin)+' '+ym(anchor)+' → '+ymKey(BULLETIN)+' '+ym(fad)+'，共 '+velMonths+' 期', velOk?Math.round(perMonth)+' 天/月':'未前进'],
+      ['按历史速度外推的等待', Math.round(gapDays)+' 天 ÷ '+(velOk?Math.round(perMonth):0)+' 天/月，从 '+ymKey(BULLETIN)+' 算起', velOk?yrs(velWaitM/12):'—', 'tot']
     ].map(function(r){
       return '<tr'+(r[3]?' class="tot"':'')+'><td>'+r[0]+'<span>'+r[1]+'</span></td><td class="n">'+r[2]+'</td></tr>';
     }).join('');
 
     var speed = density>0 ? A/(density*dep)*365 : 0;
     $('calModel').textContent = fmtN(speed)+' 天';
-    $('calReal').textContent = '≈ '+c.recent+' 天';
+    $('calReal').textContent = velOk ? fmtN(perMonth*12)+' 天' : '—';
+    $('calRealLbl').textContent = 'Visa Bulletin 实际：'+ymKey(VEL.bulletin)+'→'+ymKey(BULLETIN)+' 排期线每年前进天数';
   }
 
   document.querySelectorAll('.seg button').forEach(function(b){
@@ -374,16 +439,21 @@ footer{font-size:12px;color:var(--muted)}
   $('fad').addEventListener('input', function(){ fadTouched = true; });
   loadDefaults(); render();
 
-  // Latest Final Action Dates, refreshed daily by .github/workflows/update-bulletin.yml
+  // Latest Final Action Dates, refreshed monthly (see README)
   var isDate = function(s){ return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s); };
+  var isMonth = function(s){ return typeof s === 'string' && /^\d{4}-\d{2}$/.test(s); };
   fetch('data.json', {cache: 'no-store'}).then(function(r){ return r.ok ? r.json() : null; }).then(function(d){
     if(!d || !d.fad) return;
     ['EB1','EB2','EB3'].forEach(function(k){ if(isDate(d.fad[k])) CAT[k].fad = d.fad[k]; });
-    var m = /^(\d{4})-(\d{2})$/.exec(d.bulletin || '');
-    if(m){
-      var label = m[1]+' 年 '+(+m[2])+' 月 Visa Bulletin';
+    if(isMonth(d.bulletin)){
+      BULLETIN = d.bulletin;
+      var label = ymKey(d.bulletin)+' Visa Bulletin';
       $('fadHint').textContent = label;
       $('vbLink').textContent = label;
+    }
+    var v = d.velocityFrom;
+    if(v && isMonth(v.bulletin) && v.fad && ['EB1','EB2','EB3'].every(function(k){ return isDate(v.fad[k]); })){
+      VEL = {bulletin: v.bulletin, fad: {EB1: v.fad.EB1, EB2: v.fad.EB2, EB3: v.fad.EB3}};
     }
     if(typeof d.bulletinUrl === 'string' && /^https:\/\/travel\.state\.gov\//.test(d.bulletinUrl)) $('vbLink').href = d.bulletinUrl;
     if(isDate(d.updated)){

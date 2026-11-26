@@ -108,11 +108,37 @@ HEADERS = {
 }
 
 
+def fetch_curl(url):
+    """curl gets through some bot filters that refuse Python's HTTP client.
+    Returns (status, body) or None if curl is unavailable."""
+    import shutil
+    import subprocess
+    if not shutil.which("curl"):
+        return None
+    cmd = ["curl", "-sS", "-L", "--compressed", "-m", "30", "-w", "\n%{http_code}"]
+    for k, v in HEADERS.items():
+        cmd += ["-H", f"{k}: {v}"]
+    p = subprocess.run(cmd + [url], capture_output=True, text=True)
+    if p.returncode != 0:
+        return (0, p.stderr.strip())
+    body, _, code = p.stdout.rpartition("\n")
+    return (int(code or 0), body)
+
+
 def fetch(url):
     """Return the page HTML, or None if the bulletin is not published (404)."""
     errors = []
     for host in HOSTS:
-        req = urllib.request.Request(url.replace("travel.state.gov", host, 1), headers=HEADERS)
+        u = url.replace("travel.state.gov", host, 1)
+        got = fetch_curl(u)
+        if got:
+            code, body = got
+            if code == 404:
+                return None
+            if code == 200 and "Employment" in body:
+                return body
+            errors.append(f"{host} (curl): HTTP {code}")
+        req = urllib.request.Request(u, headers=HEADERS)
         try:
             with urllib.request.urlopen(req, timeout=30) as r:
                 html = r.read().decode("utf-8", "replace")

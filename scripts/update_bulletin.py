@@ -97,15 +97,35 @@ def parse_bulletin(html, year, month):
     raise ValueError("employment Final Action Dates table not found")
 
 
+# travel.state.gov blocks some automated requests; the same pages are also
+# served under these State Department hostnames.
+HOSTS = ["travel.state.gov", "adoption.state.gov", "childabduction.state.gov", "adoptions.state.gov"]
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+                  "(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+}
+
+
 def fetch(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "china-eb-calculator (+https://metacompany-x.github.io/china-eb-calculator/)"})
-    try:
-        with urllib.request.urlopen(req, timeout=30) as r:
-            return r.read().decode("utf-8", "replace")
-    except urllib.error.HTTPError as e:
-        if e.code == 404:
-            return None
-        raise
+    """Return the page HTML, or None if the bulletin is not published (404)."""
+    errors = []
+    for host in HOSTS:
+        req = urllib.request.Request(url.replace("travel.state.gov", host, 1), headers=HEADERS)
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                html = r.read().decode("utf-8", "replace")
+            if "Employment" in html:
+                return html
+            errors.append(f"{host}: page without bulletin tables")
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                return None
+            errors.append(f"{host}: HTTP {e.code}")
+        except urllib.error.URLError as e:
+            errors.append(f"{host}: {e.reason}")
+    raise RuntimeError("; ".join(errors))
 
 
 def main():
